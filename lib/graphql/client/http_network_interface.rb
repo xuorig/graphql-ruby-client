@@ -4,6 +4,7 @@ module GraphQL
   class Client
     class HTTPNetworkInterface
       NetworkError = Class.new(StandardError)
+      ServerError = Class.new(StandardError)
 
       def initialize(uri)
         @uri = URI(uri)

@@ -1,14 +1,18 @@
 require 'graphql'
-require 'graphql/client/normalized_store'
+require 'graphql/storage/helpers'
+require 'graphql/storage/record'
+require 'graphql/storage/memory_store'
+require 'graphql/storage/normalized_store'
 require 'graphql/client/version'
 require 'graphql/client/request'
+require 'graphql/client/query_differ'
 require 'graphql/client/http_network_interface'
 
 module GraphQL
   class Client
-    def initialize(network_interface: HTTPNetworkInterface.new('/graphql'), store: MemoryStore)
+    def initialize(network_interface: HTTPNetworkInterface.new('/graphql'))
       @network_interface = network_interface
-      @store = NormalizedStore.new
+      @store = GraphQL::Storage::NormalizedStore.new
     end
 
     def query(query_string, variables: {}, fragments: [], force_fetch: false)

@@ -1,5 +1,5 @@
 module GraphQL
-  class Client
+  module Storage
     class MemoryStore
       def initialize(initial_state: {})
         @store = initial_state
