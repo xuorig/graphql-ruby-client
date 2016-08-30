@@ -43,7 +43,7 @@ describe GraphQL::Client::QueryDiffer do
       let(:store) do
         GraphQL::Storage::NormalizedStore.new(initial_state: {
           'ROOT' => {
-            'stringField' => GraphQL::Storage::Record.new('string value')
+            'stringField' => GraphQL::Storage::ScalarRecord.new('string value')
           }
         })
       end

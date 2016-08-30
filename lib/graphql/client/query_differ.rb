@@ -60,9 +60,11 @@ module GraphQL
         record = store_object[storage_key]
 
         return QueryDiffResult.new(nil, missing: true) unless record
-        return QueryDiffResult.new(record.value) if field.selections.empty?
 
-        if record.value.is_a(Array)
+        case record
+        when Storage::ScalarRecord
+          QueryDiffResult.new(record.value)
+        when Storage::ListRecord
           missing = false
 
           result = store_value.map do |item_id|
@@ -77,21 +79,19 @@ module GraphQL
             item_diff_result.result
           end
 
-          return QueryDiffResult.new(
+          QueryDiffResult.new(
             result,
             missing: missing,
           )
-        end
-
-        if record.id?
+        when Storage::IdRecord
           # Value is an id pointing to another object
-          return diff_selection_set(
+          diff_selection_set(
             field.selections,
             root: record.id
           )
+        else
+          raise StandardError, 'Unexpected Record value in store'
         end
-
-        raise StandardError, 'Unexpected Record value in store'
       end
     end
   end

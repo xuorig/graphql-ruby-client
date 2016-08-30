@@ -47,7 +47,7 @@ module GraphQL
         store_field_name = get_storage_key(field)
 
         if field.selections.empty? && !value.is_a?(Hash)
-          store_value = Record.new(value)
+          store_value = ScalarRecord.new(value)
         elsif value.is_a?(Array)
           ids = value.each_with_index.map do |item, index|
             item_data_id = "#{data_id}.#{store_field_name}.#{index}"
@@ -61,7 +61,7 @@ module GraphQL
             item_data_id
           end
 
-          store_value = Record.new(ids)
+          store_value = ListRecord.new(ids)
         else
           value_data_id = "$#{data_id}.#{store_field_name}"
 
@@ -71,11 +71,7 @@ module GraphQL
             result: value,
           )
 
-          store_value = Record.new(
-            type: 'id',
-            id: value_data_id,
-            generated: true
-          )
+          store_value = IdRecord.new(value_data_id)
         end
 
         current_value = store[data_id]

@@ -59,11 +59,7 @@ describe GraphQL::Storage::NormalizedStore do
 
       it 'normalizes the nested object' do
         @store.write_query(query.definitions[0], result)
-        expect(@store['ROOT']['object'].value).to eq({
-          type: 'id',
-          id: '$ROOT.object',
-          generated: true
-        })
+        expect(@store['ROOT']['object'].id).to eq('$ROOT.object')
       end
 
       it 'writes the object to a new key' do

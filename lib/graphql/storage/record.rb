@@ -6,9 +6,20 @@ module GraphQL
       def initialize(value)
         @value = value
       end
+    end
 
-      def id?
-        @value.is_a?(Hash) && @value[:type] == 'id'
+    class ScalarRecord < Record
+    end
+
+    class ListRecord < Record
+    end
+
+    class IdRecord < Record
+      attr_reader(:id, :generated)
+
+      def initialize(id, generated: true)
+        @id = id
+        @generated = generated
       end
     end
   end
