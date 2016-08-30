@@ -2,7 +2,7 @@ module GraphQL
   class Client
     class QueryDiffer
       class QueryDiffResult
-        attr_reader(:result, :missing, :missing_selections)
+        attr_reader(:value, :missing, :missing_selections)
 
         def initialize(result, missing: false, missing_selections: {})
           @result = result
@@ -30,23 +30,38 @@ module GraphQL
         result = {}
 
         selections.each do |selection|
-          case selection
-          when Language::Nodes::Field
+          if selection.is_a?(Language::Nodes::Field)
             field_result = diff_field(selection, root: root)
 
             if field_result.missing
               missing_selections << selection
             else
-              result[get_result_key_name(selection)] = field_result.result
+              result[get_result_key_name(selection)] = field_result.value
             end
           else
-            # TODO fragments
+            diff_result = diff_selection_set(
+              selection.selections,
+              root: root
+            )
+
+            if diff_result.missing
+              missing_selections << selection
+            else
+              result.merge(diff_result.value)
+            end
           end
+        end
+
+        missing = false
+
+        if root != Storage::NormalizedStore::ROOT_ID
+          missing = true unless missing_selections.empty?
         end
 
         QueryDiffResult.new(
           result,
-          missing_selections: missing_selections
+          missing: missing,
+          missing_selections: missing_selections,
         )
       end
 
@@ -75,8 +90,8 @@ module GraphQL
               root: item_id
             )
 
-            missing = true unless item_diff_result.result
-            item_diff_result.result
+            missing = true unless item_diff_result.value
+            item_diff_result.value
           end
 
           QueryDiffResult.new(

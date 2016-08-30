@@ -1,8 +1,8 @@
 module GraphQL
   module DocumentBuilder
-    def self.build_query_from_selections(selection, variables: {})
-      document = Language::Document.new
-      operation_definition = Language::OperationDefinition.new(
+    def self.build_query_from_selections(selections, variables: {})
+      document = Language::Nodes::Document.new
+      operation_definition = Language::Nodes::OperationDefinition.new(
         operation_type: 'query',
         variables: variables,
         selections: selections

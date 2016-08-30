@@ -61,5 +61,46 @@ describe GraphQL::Client::QueryDiffer do
         expect(differ.diff.missing_selections).to eql(expected)
       end
     end
+
+    context 'when the store contains a nested field' do
+      let(:query) do
+        GraphQL.parse(
+          <<-GRAPHQL
+            query trivialQuery {
+              id
+              object {
+               field1
+               field2
+              }
+            }
+          GRAPHQL
+        )
+      end
+
+      let(:store) do
+        GraphQL::Storage::NormalizedStore.new(initial_state: {
+          'ROOT' => {
+            'id' => GraphQL::Storage::ScalarRecord.new(1),
+            'object' => GraphQL::Storage::IdRecord.new('$ROOT.object'),
+          },
+          '$ROOT.object' => {
+            'field1' => GraphQL::Storage::ScalarRecord.new('field1'),
+          },
+        })
+      end
+
+      let(:differ) do
+        GraphQL::Client::QueryDiffer.new(
+          query.definitions[0],
+          store
+        )
+      end
+
+      it 'returns only the missing selections' do
+        selections = query.definitions[0].selections
+        expected = selections.reject { |selection| selection.name == 'id' }
+        expect(differ.diff.missing_selections).to eql(expected)
+      end
+    end
   end
 end

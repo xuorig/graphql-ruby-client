@@ -10,6 +10,8 @@ require 'graphql/client/request'
 require 'graphql/client/query_differ'
 require 'graphql/client/http_network_interface'
 
+require 'graphql/document_builder'
+
 module GraphQL
   class Client
     def initialize(network_interface: HTTPNetworkInterface.new('/graphql'))
@@ -21,10 +23,19 @@ module GraphQL
       document = GraphQL.parse(query_string)
       minified_document = diff_query(document)
 
+      puts "**** AFTER MINIFICATION ****"
+      puts minified_document.to_query_string
+      puts "**** AFTER MINIFICATION ****"
+
       graphql_request = Request.new(minified_document, variables)
       result = network_interface.query(graphql_request)
 
-      write_result_to_store(document, result)
+      write_result_to_store(minified_document, result)
+
+      puts "**** NEW STORE STATE ****"
+      puts store.inspect
+      puts "**** NEW STORE STATE ****"
+
       result
     end
 
@@ -38,7 +49,7 @@ module GraphQL
         store
       ).diff
 
-      result = diff.result
+      result = diff.value
       missing_selections = diff.missing_selections
 
       GraphQL::DocumentBuilder.build_query_from_selections(missing_selections)
@@ -46,7 +57,7 @@ module GraphQL
 
     def write_result_to_store(document, result)
       query = document.definitions[0]
-      store.write_query(query, result)
+      store.write_query(query, result['data'])
     end
   end
 end
